@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ТелефонПоиск / PhoneFinder</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --black:#0a0a0a; --dark:#141414; --card:#1c1c1c; --line:#2a2a2a;
+    --white:#fff; --gray:#a0a0a0; --gray2:#6a6a6a; --radius:14px;
+    --font-body:'Inter',system-ui,sans-serif;
+    --font-display:'Unbounded',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:var(--font-body);
+    font-feature-settings:'ss01','cv11';
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    letter-spacing:-0.01em;
+    background:var(--black);color:var(--white);line-height:1.55;
+  }
+  .container{max-width:1200px;margin:0 auto;padding:0 20px}
+
+  /* HEADER */
+  header{position:sticky;top:0;z-index:20;background:rgba(10,10,10,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:70px;gap:20px}
+  .logo{display:flex;flex-direction:column;line-height:1.1;cursor:pointer}
+  .logo b{font-family:var(--font-display);font-size:1.05rem;font-weight:700;letter-spacing:-0.03em}
+  .logo span{font-family:var(--font-body);font-size:.66rem;color:var(--gray2);letter-spacing:.22em;text-transform:uppercase;font-weight:500}
+  .nav-links{display:flex;gap:26px;list-style:none}
+  .nav-links a{color:var(--gray);text-decoration:none;font-size:.9rem;font-weight:500;transition:.2s}
+  .nav-links a:hover{color:var(--white)}
+  .profile{display:flex;align-items:center;gap:10px;cursor:pointer;padding:6px 14px 6px 6px;border:1px solid var(--line);border-radius:999px;transition:.2s}
+  .profile:hover{border-color:var(--white)}
+  .avatar{width:34px;height:34px;border-radius:50%;background:var(--white);color:var(--black);display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:.78rem;letter-spacing:-0.03em}
+  .profile-info{display:flex;flex-direction:column;line-height:1.15}
+  .profile-info b{font-family:var(--font-body);font-size:.83rem;font-weight:600;letter-spacing:-0.01em}
+  .profile-info small{font-size:.68rem;color:var(--gray2);letter-spacing:.05em}
+
+  /* HERO */
+  .hero{padding:64px 0 30px;text-align:center}
+  .hero .tag{display:inline-block;padding:6px 14px;border:1px solid var(--line);border-radius:999px;font-family:var(--font-body);font-size:.7rem;color:var(--gray);letter-spacing:.2em;text-transform:uppercase;font-weight:500;margin-bottom:22px}
+  .hero h1{font-family:var(--font-display);font-weight:800;font-size:clamp(1.9rem,4.5vw,3rem);line-height:1.1;letter-spacing:-0.045em;margin-bottom:16px}
+  .hero h1 em{font-style:normal;color:var(--gray2)}
+  .hero p{color:var(--gray);max-width:560px;margin:0 auto;font-size:1rem;font-weight:400}
+
+  /* LAYOUT */
+  .layout{display:grid;grid-template-columns:290px 1fr;gap:28px;padding:30px 0 80px}
+
+  /* FILTERS */
+  .filters{background:var(--dark);border:1px solid var(--line);border-radius:var(--radius);padding:24px;height:fit-content;position:sticky;top:92px}
+  .filters h3{font-family:var(--font-body);font-size:.68rem;text-transform:uppercase;letter-spacing:.22em;color:var(--gray2);margin-bottom:20px;font-weight:600}
+  .filter-group{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+  .filter-group:last-of-type{border-bottom:0;padding-bottom:0;margin-bottom:16px}
+  .filter-group label{display:block;font-size:.83rem;margin-bottom:9px;color:var(--gray);font-weight:500;letter-spacing:-0.005em}
+  .filter-group input,.filter-group select{width:100%;padding:11px 13px;border-radius:8px;background:var(--black);border:1px solid var(--line);color:var(--white);font-family:var(--font-body);font-size:.87rem;font-weight:400;outline:none;transition:.2s;letter-spacing:-0.005em}
+  .filter-group input::placeholder{color:var(--gray2)}
+  .filter-group input:focus,.filter-group select:focus{border-color:var(--white);background:#0f0f0f}
+  .range-row{display:flex;gap:8px;align-items:center}
+  .range-row input{flex:1}
+  .checks{display:grid;gap:9px}
+  .check{display:flex;align-items:center;gap:9px;cursor:pointer;font-size:.86rem;color:var(--gray);font-weight:400;transition:.15s}
+  .check input{accent-color:var(--white);width:15px;height:15px;cursor:pointer}
+  .check:hover{color:var(--white)}
+
+  .search-btn{width:100%;padding:13px;border-radius:9px;background:var(--white);color:var(--black);border:0;font-family:var(--font-body);font-weight:700;cursor:pointer;font-size:.9rem;transition:.2s;margin-bottom:10px;letter-spacing:-0.01em}
+  .search-btn:hover{background:var(--gray);transform:translateY(-1px)}
+  .search-btn:disabled{opacity:.5;cursor:wait;transform:none}
+
+  .reset-btn{width:100%;padding:11px;border-radius:9px;background:transparent;color:var(--gray);border:1px solid var(--line);font-family:var(--font-body);font-weight:500;cursor:pointer;font-size:.83rem;transition:.2s;letter-spacing:-0.005em}
+  .reset-btn:hover{border-color:var(--white);color:var(--white)}
+
+  /* RESULTS HEAD */
+  .results-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .results-head h2{font-family:var(--font-display);font-size:1rem;font-weight:600;letter-spacing:-0.025em}
+  .results-head .count{color:var(--gray2);font-size:.85rem;font-weight:400;margin-left:8px;font-family:var(--font-body);letter-spacing:0}
+  .results-head select{padding:9px 14px;border-radius:8px;background:var(--dark);border:1px solid var(--line);color:var(--white);font-family:var(--font-body);font-size:.83rem;font-weight:500;outline:none;cursor:pointer;letter-spacing:-0.005em}
+  .results-head select:focus{border-color:var(--white)}
+
+  /* OZON BANNER */
+  .ozon-banner{background:var(--dark);border:1px dashed var(--line);border-radius:12px;padding:18px 22px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+  .ozon-banner b{font-family:var(--font-display);font-size:.88rem;font-weight:600;letter-spacing:-0.02em}
+  .ozon-banner small{display:block;color:var(--gray2);font-size:.75rem;margin-top:3px;font-family:var(--font-body)}
+  .ozon-banner a{background:var(--white);color:var(--black);padding:10px 18px;border-radius:8px;text-decoration:none;font-family:var(--font-body);font-weight:700;font-size:.8rem;white-space:nowrap;transition:.2s;letter-spacing:-0.01em}
+  .ozon-banner a:hover{background:var(--gray)}
+
+  /* GRID */
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+  .phone-card{background:var(--dark);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;transition:.25s;display:flex;flex-direction:column}
+  .phone-card:hover{border-color:var(--white);transform:translateY(-3px)}
+  .phone-img-wrap{position:relative;aspect-ratio:1/1;background:var(--black);border-bottom:1px solid var(--line);display:grid;place-items:center;overflow:hidden}
+  .phone-img-wrap img{width:100%;height:100%;object-fit:contain;padding:16px;transition:.3s}
+  .phone-card:hover .phone-img-wrap img{transform:scale(1.05)}
+  .phone-img{font-size:4.5rem}
+  .market-tag{position:absolute;top:12px;right:12px;font-family:var(--font-body);font-size:.62rem;padding:4px 9px;border-radius:6px;background:var(--black);color:var(--white);border:1px solid var(--line);text-transform:uppercase;letter-spacing:.12em;font-weight:700}
+  .phone-body{padding:16px;display:flex;flex-direction:column;flex:1}
+  .phone-brand{font-family:var(--font-body);font-size:.64rem;color:var(--gray2);text-transform:uppercase;letter-spacing:.2em;margin-bottom:5px;font-weight:600}
+  .phone-name{font-family:var(--font-body);font-size:.88rem;font-weight:600;letter-spacing:-0.015em;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.7em;line-height:1.35}
+  .specs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .spec{font-family:var(--font-body);font-size:.7rem;padding:3px 9px;border-radius:6px;background:var(--card);color:var(--gray);border:1px solid var(--line);font-weight:500}
+  .price-row{display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto;padding-top:14px;border-top:1px solid var(--line);gap:10px}
+  .price{font-family:var(--font-display);font-size:1.02rem;font-weight:700;letter-spacing:-0.035em}
+  .old-price{font-size:.73rem;color:var(--gray2);text-decoration:line-through;margin-top:3px;font-family:var(--font-body)}
+  .buy-btn{padding:9px 16px;border-radius:8px;background:var(--white);color:var(--black);text-decoration:none;font-family:var(--font-body);font-weight:700;font-size:.78rem;white-space:nowrap;transition:.2s;border:0;cursor:pointer;letter-spacing:-0.01em}
+  .buy-btn:hover{background:var(--gray)}
+
+  /* STATES */
+  .empty{text-align:center;padding:80px 20px;color:var(--gray2);border:1px dashed var(--line);border-radius:var(--radius)}
+  .empty .big{font-size:2.5rem;margin-bottom:14px;opacity:.4}
+  .empty b{font-family:var(--font-display);font-weight:600;font-size:1rem;letter-spacing:-0.02em;color:var(--gray)}
+  .loading{grid-column:1/-1;text-align:center;padding:60px;color:var(--gray2)}
+  .spinner{width:36px;height:36px;border:3px solid var(--line);border-top-color:var(--white);border-radius:50%;margin:0 auto 14px;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* FOOTER */
+  footer{border-top:1px solid var(--line);padding:34px 0;text-align:center;color:var(--gray2);font-size:.8rem;font-family:var(--font-body);letter-spacing:0.005em}
+  footer b{color:var(--gray);font-weight:600;letter-spacing:-0.005em}
+
+  /* MODAL */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);display:none;place-items:center;z-index:50;padding:20px}
+  .modal-bg.open{display:grid}
+  .modal{background:var(--dark);border:1px solid var(--line);border-radius:16px;max-width:440px;width:100%;padding:32px;position:relative}
+  .modal h3{font-family:var(--font-display);font-size:1.1rem;font-weight:700;letter-spacing:-0.03em;margin-bottom:6px}
+  .modal .sub{color:var(--gray2);font-size:.83rem;margin-bottom:24px;font-family:var(--font-body)}
+  .modal .field{margin-bottom:14px}
+  .modal .field label{display:block;font-size:.78rem;color:var(--gray);margin-bottom:6px;font-weight:500}
+  .modal .field input{width:100%;padding:11px 13px;border-radius:8px;background:var(--black);border:1px solid var(--line);color:var(--white);font-family:var(--font-body);font-size:.88rem;outline:none;transition:.2s}
+  .modal .field input:focus{border-color:var(--white)}
+  .modal .close{position:absolute;top:14px;right:16px;background:none;border:0;color:var(--gray2);font-size:1.5rem;cursor:pointer;line-height:1}
+  .modal .close:hover{color:var(--white)}
+  .modal .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:22px 0}
+  .stat{background:var(--black);border:1px solid var(--line);border-radius:10px;padding:14px 10px;text-align:center}
+  .stat b{display:block;font-family:var(--font-display);font-size:1.15rem;font-weight:700;letter-spacing:-0.035em}
+  .stat small{font-size:.65rem;color:var(--gray2);text-transform:uppercase;letter-spacing:.14em;font-weight:500}
+
+  /* MOBILE */
+  @media(max-width:900px){
+    .layout{grid-template-columns:1fr}
+    .filters{position:static}
+    .nav-links{display:none}
+  }
+  @media(max-width:600px){
+    .profile-info{display:none}
+    .results-head{flex-direction:column;align-items:flex-start}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <div class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+      <b>ТелефонПоиск</b>
+      <span>PhoneFinder</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#catalog">Каталог</a></li>
+      <li><a href="#catalog">Ozon</a></li>
+      <li><a href="#catalog">Wildberries</a></li>
+      <li><a href="#" onclick="event.preventDefault();alert('PhoneFinder — поиск смартфонов на Wildberries и переход к поиску на Ozon.')">О проекте</a></li>
+    </ul>
+    <div class="profile" id="profileBtn">
+      <div class="avatar">АК</div>
+      <div class="profile-info"><b>Алексей К.</b><small>Профиль</small></div>
+    </div>
+  </div>
+</header>
+
+<section class="hero container">
+  <div class="tag">Поиск · WB + Ozon</div>
+  <h1>Найди свой телефон <em>за минуту</em></h1>
+  <p>Выбери параметры — покажем реальные товары с ценами и ссылками на покупку.</p>
+</section>
+
+<div class="container layout" id="catalog">
+
+  <aside class="filters">
+    <h3>Параметры поиска</h3>
+
+    <div class="filter-group">
+      <label>Что ищем</label>
+      <input type="text" id="fSearch" placeholder="iPhone 15, Samsung S24..." value="смартфон">
+    </div>
+
+    <div class="filter-group">
+      <label>Бренд</label>
+      <select id="fBrand">
+        <option value="">Все бренды</option>
+        <option>Apple</option><option>Samsung</option><option>Xiaomi</option>
+        <option>Google</option><option>Huawei</option><option>Realme</option>
+        <option>Oppo</option><option>Vivo</option><option>Honor</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Цена, ₽</label>
+      <div class="range-row">
+        <input type="number" id="fMin" placeholder="от" min="0">
+        <input type="number" id="fMax" placeholder="до" min="0">
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label>Память</label>
+      <select id="fStorage">
+        <option value="">Любая</option>
+        <option value="64">64 ГБ</option>
+        <option value="128">128 ГБ</option>
+        <option value="256">256 ГБ</option>
+        <option value="512">512 ГБ</option>
+        <option value="1024">1 ТБ</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Цвет</label>
+      <div class="checks" id="fColors">
+        <label class="check"><input type="checkbox" value="черн"> Чёрный</label>
+        <label class="check"><input type="checkbox" value="бел"> Белый</label>
+        <label class="check"><input type="checkbox" value="сер"> Серый</label>
+        <label class="check"><input type="checkbox" value="син"> Синий</label>
+        <label class="check"><input type="checkbox" value="зелен"> Зелёный</label>
+        <label class="check"><input type="checkbox" value="золот"> Золотой</label>
+        <label class="check"><input type="checkbox" value="розов"> Розовый</label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label>Маркетплейс</label>
+      <div class="checks">
+        <label class="check"><input type="checkbox" class="fMarket" value="WB" checked> Wildberries</label>
+        <label class="check"><input type="checkbox" class="fMarket" value="Ozon" checked> Ozon (переход к поиску)</label>
+      </div>
+    </div>
+
+    <button class="search-btn" id="searchBtn">Найти телефоны</button>
+    <button class="reset-btn" id="resetBtn">Сбросить</button>
+  </aside>
+
+  <main>
+    <div class="results-head">
+      <h2>Найдено <span class="count" id="count">0</span></h2>
+      <select id="sortSelect">
+        <option value="popular">Сначала популярные</option>
+        <option value="priceup">Цена: по возрастанию</option>
+        <option value="pricedown">Цена: по убыванию</option>
+        <option value="rate">По рейтингу</option>
+      </select>
+    </div>
+
+    <div id="ozonBanner" style="display:none"></div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" style="display:none">
+      <div class="big">🔍</div>
+      <b>Ничего не найдено</b><br>
+      Попробуйте изменить параметры поиска.
+    </div>
+  </main>
+</div>
+
+<footer>
+  <div class="container">
+    <b>ТелефонПоиск · PhoneFinder</b> — поиск смартфонов.<br>
+    © 2026. Цены и наличие уточняйте на маркетплейсах.
+  </div>
+</footer>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <button class="close" id="modalClose">×</button>
+    <h3>Профиль покупателя</h3>
+    <p class="sub">Личные данные и история поиска</p>
+    <div class="field"><label>Имя</label><input type="text" value="Алексей К."></div>
+    <div class="field"><label>Email</label><input type="email" value="alexey@example.com"></div>
+    <div class="field"><label>Город доставки</label><input type="text" value="Москва"></div>
+    <div class="stats">
+      <div class="stat"><b id="statSearches">0</b><small>Поисков</small></div>
+      <div class="stat"><b>0</b><small>В избранном</small></div>
+      <div class="stat"><b>0</b><small>Заказов</small></div>
+    </div>
+    <button class="search-btn" onclick="document.getElementById('modalBg').classList.remove('open')">Сохранить</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ПОИСК НА WILDBERRIES
+   Перебираем: 3 версии API × 5 прокси = 15 попыток
+   ============================================================ */
+
+const WB_VERSIONS = ['v13', 'v9', 'v5'];
+
+const CORS_PROXIES = [
+  { name: 'corsproxy.io',    build: u => `https://corsproxy.io/?url=${encodeURIComponent(u)}` },
+  { name: 'allorigins.raw',  build: u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}` },
+  { name: 'allorigins.get',  build: u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}` },
+  { name: 'codetabs',        build: u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}` },
+  { name: 'thingproxy',      build: u => `https://thingproxy.freeboard.io/fetch/${u}` },
+];
+
+let lastDebugLog = [];
+
+async function fetchWB(query, sort) {
+  lastDebugLog = [];
+  const qs = new URLSearchParams({
+    appType: '1', curr: 'rub', dest: '-1257786',
+    query, resultset: 'catalog', sort, spp: '30', page: '1',
+  }).toString();
+
+  for (const version of WB_VERSIONS) {
+    const apiUrl = `https://search.wb.ru/exactmatch/ru/common/${version}/search?${qs}`;
+
+    for (const proxy of CORS_PROXIES) {
+      const proxyUrl = proxy.build(apiUrl);
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 8000);
+        const r = await fetch(proxyUrl, { signal: ctrl.signal });
+        clearTimeout(timer);
+
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+
+        let data = await r.json();
+
+        // allorigins.get возвращает {contents: "..."} — распаковываем
+        if (data && typeof data.contents === 'string') {
+          try { data = JSON.parse(data.contents); } catch(_) {}
+        }
+
+        const products = data?.data?.products;
+        if (Array.isArray(products) && products.length) {
+          lastDebugLog.push(`✅ ${version} / ${proxy.name} — ${products.length} шт.`);
+          return products;
+        }
+        lastDebugLog.push(`⚠️ ${version} / ${proxy.name} — пусто`);
+      } catch (e) {
+        lastDebugLog.push(`❌ ${version} / ${proxy.name} — ${e.message}`);
+      }
+    }
+  }
+  throw new Error('WB API недоступен');
+}
+
+/* ============ УТИЛИТЫ ============ */
+
+}
+
+function getBasket(nm) {
+  const v = Math.floor(nm / 100000);
+  if (v <= 143) return '01'; if (v <= 287) return '02';
+  if (v <= 431) return '03'; if (v <= 719) return '04';
+  if (v <= 1007) return '05'; if (v <= 1061) return '06';
+  if (v <= 1115) return '07'; if (v <= 1169) return '08';
+  if (v <= 1313) return '09'; if (v <= 1601) return '10';
+  if (v <= 1655) return '11'; if (v <= 1919) return '12';
+  if (v <= 2045) return '13'; if (v <= 2189) return '14';
+  if (v <= 2405) return '15'; if (v <= 2621) return '16';
+  if (v <= 2837) return '17'; if (v <= 3053) return '18';
+  if (v <= 3269) return '19'; if (v <= 3485) return '20';
+  if (v <= 3701) return '21'; if (v <= 3917) return '22';
+  if (v <= 4133) return '23'; if (v <= 4349) return '24';
+  return '25';
+}
+
+function buildImgUrl(nmID, size = 'big') {
+  const vol = Math.floor(nmID / 100000);
+  const part = Math.floor(nmID / 1000);
+  const basket = getBasket(nmID);
+  return `https://basket-${basket}.wbbasket.ru/vol${vol}/part${part}/${nmID}/images/${size}/1.webp`;
+}
+
+function extractStorage(text) {
+  if (!text) return 0;
+  const m = text.match(/(\d+)\s*(ГБ|GB|ТБ|TB)/i);
+  if (!m) return 0;
+  let v = +m[1];
+  if (/ТБ|TB/i.test(m[2])) v *= 1024;
+  return v;
+}
+
+function mapWBProduct(p) {
+  const nmID = p.id;
+  const img = buildImgUrl(nmID, 'big');
+
+  // Цена: разные структуры в разных версиях API
+  let price = 0, oldPrice = 0;
+  if (p.salePriceU) price = p.salePriceU / 100;
+  else if (p.sizes?.[0]?.price?.product) price = p.sizes[0].price.product / 100;
+  else if (p.priceU) price = p.priceU / 100;
+
+  if (p.priceU) oldPrice = p.priceU / 100;
+  else if (p.sizes?.[0]?.price?.basic) oldPrice = p.sizes[0].price.basic / 100;
+
+  return {
+    id: nmID,
+    name: (p.name || '').trim(),
+    brand: (p.brand || '').trim(),
+    price,
+    oldPrice: oldPrice > price ? oldPrice : 0,
+    rating: p.reviewRating || p.rating || 0,
+    reviews: p.feedbacks || 0,
+    storage: extractStorage(p.name),
+    image: img,
+    url: `https://www.wildberries.ru/catalog/${nmID}/detail.aspx`,
+    market: 'WB',
+  };
+}
+
+/* ============ ГЛАВНЫЙ ПОИСК ============ */
+let searchCount = 0;
+
+async function runSearch() {
+  const query   = document.getElementById('fSearch').value.trim() || 'смартфон';
+  const brand   = document.getElementById('fBrand').value;
+  const min     = +document.getElementById('fMin').value || 0;
+  const max     = +document.getElementById('fMax').value || Infinity;
+  const storage = document.getElementById('fStorage').value;
+  const colors  = [...document.querySelectorAll('#fColors input:checked')].map(c => c.value);
+  const markets = [...document.querySelectorAll('.fMarket:checked')].map(m => m.value);
+  const sort    = document.getElementById('sortSelect').value;
+
+  const fullQuery = brand ? `${brand} ${query}` : query;
+
+  /* Ozon — баннер со ссылкой */
+  const ozonBanner = document.getElementById('ozonBanner');
+  if (markets.includes('Ozon')) {
+    const ozonUrl = `https://www.ozon.ru/search/?text=${encodeURIComponent(fullQuery)}` +
+      (min ? `&min_price=${min}` : '') +
+      (max !== Infinity ? `&max_price=${max}` : '');
+    ozonBanner.innerHTML = `
+      <div class="ozon-banner">
+        <div>
+          <b>Показать результаты на Ozon</b>
+          <small>Ozon не даёт публичного API — откроем поиск с вашими фильтрами в новой вкладке</small>
+        </div>
+        <a href="${ozonUrl}" target="_blank" rel="noopener">Открыть Ozon →</a>
+      </div>`;
+    ozonBanner.style.display = 'block';
+  } else {
+    ozonBanner.style.display = 'none';
+  }
+
+  /* WB — реальный поиск */
+  if (!markets.includes('WB')) {
+    document.getElementById('grid').innerHTML = '';
+    document.getElementById('count').textContent = '0';
+    return;
+  }
+
+  const grid  = document.getElementById('grid');
+  const empty = document.getElementById('empty');
+  empty.style.display = 'none';
+  grid.innerHTML = `<div class="loading"><div class="spinner"></div>Ищем на Wildberries...</div>`;
+  document.getElementById('searchBtn').disabled = true;
+
+  try {
+    const raw = await fetchWB(fullQuery, sort);
+    let items = raw.map(mapWBProduct);
+
+    items = items.filter(p => {
+      if (p.price < min || p.price > max) return false;
+      if (storage && p.storage && p.storage !== +storage) return false;
+      if (colors.length) {
+        const n = p.name.toLowerCase();
+        if (!colors.some(c => n.includes(c))) return false;
+      }
+      return true;
+    });
+
+    document.getElementById('count').textContent = items.length;
+
+    if (!items.length) {
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+
+    renderCards(items);
+    searchCount++;
+    document.getElementById('statSearches').textContent = searchCount;
+
+  } catch (err) {
+    console.error(err);
+    const directUrl = `https://www.wildberries.ru/catalog/0/search.aspx?search=${encodeURIComponent(fullQuery)}`;
+    grid.innerHTML = `
+      <div class="loading" style="color:var(--gray2);max-width:620px;margin:0 auto">
+        <div style="font-size:2rem;margin-bottom:12px">⚠️</div>
+        <b style="font-family:var(--font-display);color:var(--white);font-size:1rem;">Не удалось связаться с Wildberries</b>
+        <p style="margin-top:10px;font-size:.85rem">
+          Бесплатные прокси перегружены. Попробуйте через 30 секунд или откройте поиск напрямую:
+        </p>
+        <a href="${directUrl}" target="_blank" rel="noopener" class="buy-btn" style="display:inline-block;margin-top:16px">Открыть поиск на WB →</a>
+        <details style="margin-top:22px;text-align:left;font-size:.72rem;opacity:.75">
+          <summary style="cursor:pointer;margin-bottom:8px">Технические детали (${lastDebugLog.length} попыток)</summary>
+          <pre style="white-space:pre-wrap;font-family:monospace;line-height:1.6;background:var(--black);padding:12px;border-radius:8px;border:1px solid var(--line)">${lastDebugLog.join('\n')}</pre>
+        </details>
+      </div>`;
+  } finally {
+    document.getElementById('searchBtn').disabled = false;
+  }
+}
+
+/* ============ ОТРИСОВКА ============ */
+function renderCards(list) {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = list.map(p => `
+    <article class="phone-card">
+      <div class="phone-img-wrap">
+        <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy"
+             onerror="this.onerror=null;this.src='${buildImgUrl(p.id, 'c516x688')}'">
+        <span class="market-tag">WB</span>
+      </div>
+      <div class="phone-body">
+        <div class="phone-brand">${escapeHtml(p.brand || 'Wildberries')}</div>
+        <div class="phone-name">${escapeHtml(p.name)}</div>
+        <div class="specs">
+          ${p.storage ? `<span class="spec">${p.storage >= 1024 ? (p.storage/1024)+' ТБ' : p.storage+' ГБ'}</span>` : ''}
+          ${p.rating ? `<span class="spec">★ ${(+p.rating).toFixed(1)}</span>` : ''}
+          ${p.reviews ? `<span class="spec">${p.reviews} отз.</span>` : ''}
+        </div>
+        <div class="price-row">
+          <div>
+            <div class="price">${fmtPrice(p.price)}</div>
+            ${p.oldPrice ? `<div class="old-price">${fmtPrice(p.oldPrice)}</div>` : ''}
+          </div>
+          <a href="${p.url}" target="_blank" rel="noopener" class="buy-btn">Купить</a>
+        </div>
+      </div>
+    </article>
+  `).join('');
+}
+
+function fmtPrice(n){return new Intl.NumberFormat('ru-RU').format(Math.round(n))+' ₽';}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ============ СОБЫТИЯ ============ */
+document.getElementById('searchBtn').addEventListener('click', runSearch);
+document.getElementById('sortSelect').addEventListener('change', runSearch);
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  document.getElementById('fSearch').value = 'смартфон';
+  document.getElementById('fBrand').value = '';
+  document.getElementById('fMin').value = '';
+  document.getElementById('fMax').value = '';
+  document.getElementById('fStorage').value = '';
+  document.querySelectorAll('#fColors input').forEach(c => c.checked = false);
+  document.querySelectorAll('.fMarket').forEach(m => m.checked = true);
+  document.getElementById('sortSelect').value = 'popular';
+  runSearch();
+});
+
+document.getElementById('fSearch').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runSearch();
+});
+
+const modalBg = document.getElementById('modalBg');
+document.getElementById('profileBtn').addEventListener('click', () => modalBg.classList.add('open'));
+document.getElementById('modalClose').addEventListener('click', () => modalBg.classList.remove('open'));
+modalBg.addEventListener('click', e => { if (e.target === modalBg) modalBg.classList.remove('open'); });
+
+window.addEventListener('load', runSearch);
+</script>
+</body>
+</html>
+```
